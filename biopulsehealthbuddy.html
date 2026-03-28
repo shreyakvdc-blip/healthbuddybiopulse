@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioPulse – AI Health App</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    font-family:'Roboto',sans-serif;
+    background:#001122;
+    color:white;
+}
+header{
+    position:fixed;
+    width:100%;
+    top:0;
+    background:#000033;
+    z-index:1000;
+}
+nav{
+    max-width:1200px;
+    margin:auto;
+    padding:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.logo{
+    font-family:'Montserrat';
+    font-size:2rem;
+    font-weight:700;
+    color:#00d4ff;
+}
+nav ul{list-style:none;display:flex}
+nav li{margin-left:25px}
+nav a{color:white;text-decoration:none}
+nav a:hover{color:#00d4ff}
+
+.hero{
+    min-height:100vh;
+    padding:130px 20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    background:linear-gradient(135deg,#001122,#003366);
+}
+.hero h1{
+    font-size:3.3rem;
+    font-family:'Montserrat';
+}
+.hero p{
+    max-width:850px;
+    font-size:1.2rem;
+}
+.btn{
+    margin-top:25px;
+    padding:15px 35px;
+    border-radius:50px;
+    background:#00d4ff;
+    color:#001122;
+    text-decoration:none;
+    font-weight:600;
+}
+
+section{
+    max-width:1200px;
+    margin:auto;
+    padding:80px 20px;
+}
+.section-title{
+    text-align:center;
+    font-family:'Montserrat';
+    font-size:2.5rem;
+    color:#00d4ff;
+    margin-bottom:50px;
+}
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:35px;
+}
+.feature-item{
+    background:rgba(255,255,255,0.1);
+    padding:30px;
+    border-radius:15px;
+    cursor:pointer;
+    transition:.3s;
+}
+.feature-item:hover{
+    transform:translateY(-8px);
+    box-shadow:0 10px 30px rgba(0,212,255,0.3);
+}
+
+/* MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    z-index:3000;
+    justify-content:center;
+    align-items:center;
+}
+.modal-content{
+    background:#001122;
+    padding:30px;
+    border-radius:15px;
+    width:90%;
+    max-width:900px;
+}
+.close{
+    float:right;
+    font-size:28px;
+    cursor:pointer;
+}
+input,select,button{
+    padding:10px;
+    margin:8px 0;
+    border:none;
+    border-radius:5px;
+    width:100%;
+}
+button{background:#00d4ff;cursor:pointer}
+canvas{max-height:320px}
+
+footer{
+    background:#000033;
+    text-align:center;
+    padding:30px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<nav>
+<div class="logo">BioPulse</div>
+<ul>
+<li><a href="#features">Features</a></li>
+</ul>
+</nav>
+</header>
+
+<section class="hero">
+<h1>Revolutionize Your Health with BioPulse</h1>
+<p>The first AI-powered health app that understands lifestyle, supports mental health, and builds habits — not just tracks data.</p>
+<a href="#features" class="btn">Explore Features</a>
+</section>
+
+<section id="features">
+<h2 class="section-title">Key Features</h2>
+
+<div class="feature-grid">
+<div class="feature-item" onclick="openModal('onboarding')">🚀 Smart Onboarding + 7-Day Analysis</div>
+<div class="feature-item" onclick="openModal('matching')">🤝 Health Buddy Matching</div>
+<div class="feature-item" onclick="openModal('chatbot')">🤖 AI Health Chatbot</div>
+<div class="feature-item" onclick="openModal('diet')">🥗 Diet & Habit Monitor</div>
+<div class="feature-item" onclick="openModal('scoreboard')">🎯 Activity Scoreboard & Streaks</div>
+<div class="feature-item" onclick="openModal('gamified')">🎮 Gamified Recovery</div>
+<div class="feature-item" onclick="openModal('educator')">📚 AI Health Educator</div>
+<div class="feature-item" onclick="openModal('holistic')">🌱 Holistic Health Approach</div>
+</div>
+</section>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+<div class="modal-content">
+<span class="close" onclick="closeModal()">×</span>
+<h2 id="modalTitle"></h2>
+<div id="modalBody"></div>
+</div>
+</div>
+
+<footer>
+<p>© 2025 BioPulse | Ideathon Project</p>
+</footer>
+
+<script>
+let chart=null;
+let streak=0;
+
+function openModal(type){
+document.getElementById("modal").style.display="flex";
+const t=document.getElementById("modalTitle");
+const b=document.getElementById("modalBody");
+if(chart){chart.destroy();chart=null}
+
+if(type==="onboarding"){
+t.innerText="Smart Onboarding – AI Lifestyle Analysis";
+b.innerHTML=`
+<input id="sleep" type="number" placeholder="Sleep hours (e.g. 7)">
+<input id="steps" type="number" placeholder="Daily steps (e.g. 6000)">
+<select id="food">
+<option value="1">Poor Diet</option>
+<option value="2">Average Diet</option>
+<option value="3">Healthy Diet</option>
+</select>
+<button onclick="generateOnboarding()">Generate AI Report</button>
+<p id="score"></p>
+<canvas id="chart"></canvas>`;
+}
+
+if(type==="matching"){
+t.innerText="Health Buddy Matching";
+b.innerHTML=`
+<input id="condition" placeholder="Enter condition (e.g. Diabetes)">
+<button onclick="findBuddy()">Find Buddies</button>
+<p id="match"></p>`;
+}
+
+if(type==="chatbot"){
+t.innerText="AI Health Chatbot";
+b.innerHTML=`
+<p><strong>Ask your health question:</strong></p>
+<input id="userQuery" placeholder="e.g. Why am I feeling tired lately?">
+<button onclick="askAI()">Ask AI</button>
+<p id="aiReply"></p>
+`;
+}
+
+if(type==="diet"){
+t.innerText="Diet & Habit Monitor";
+b.innerHTML=`
+<input id="meals" type="number" placeholder="Meals per day">
+<button onclick="analyzeDiet()">Analyze Diet</button>
+<canvas id="chart"></canvas>`;
+}
+
+if(type==="scoreboard"){
+t.innerText="Activity Scoreboard & Monthly Analysis";
+b.innerHTML=`
+<p><strong>Current Streak:</strong> <span id="streak">${streak}</span> days 🔥</p>
+<button onclick="addStreak()">Mark Today Active</button><br><br>
+<button onclick="monthlyReport()">Generate Monthly Report</button>
+<canvas id="chart"></canvas>`;
+}
+
+if(type==="gamified"){
+t.innerText="Gamified Recovery System";
+b.innerHTML=`<p>Earn badges, streaks, and rewards for daily consistency.</p>`;
+}
+
+if(type==="educator"){
+t.innerText="AI Health Educator";
+b.innerHTML=`<p>📘 Today’s lesson: Quality sleep improves immunity, focus, and emotional balance.</p>`;
+}
+
+if(type==="holistic"){
+t.innerText="Holistic Health Approach";
+b.innerHTML=`<p>BioPulse integrates mental health, physical habits, community, and AI-driven insights.</p>`;
+}
+}
+
+function closeModal(){document.getElementById("modal").style.display="none"}
+
+function generateOnboarding(){
+const sleep=+document.getElementById("sleep").value||6;
+const steps=+document.getElementById("steps").value||4000;
+const food=+document.getElementById("food").value;
+const score=Math.min(100,Math.floor(sleep*10+steps/1000*10+food*15));
+document.getElementById("score").innerHTML=`AI Health Score: <strong>${score}/100</strong>`;
+chart=new Chart(document.getElementById("chart"),{
+type:"line",
+data:{labels:["D1","D2","D3","D4","D5","D6","D7"],
+datasets:[{label:"Consistency",data:Array.from({length:7},()=>score+Math.random()*8-4),borderColor:"#00d4ff",fill:true}]}
+});
+}
+
+function analyzeDiet(){
+chart=new Chart(document.getElementById("chart"),{
+type:"bar",
+data:{labels:["Protein","Carbs","Fats","Fiber"],
+datasets:[{label:"Nutrition Score",data:[70,60,50,65],backgroundColor:"#00d4ff"}]}
+});
+}
+
+function monthlyReport(){
+chart=new Chart(document.getElementById("chart"),{
+type:"bar",
+data:{
+labels:["Week 1","Week 2","Week 3","Week 4"],
+datasets:[
+{label:"Activity",data:[60,70,75,85],backgroundColor:"#00d4ff"},
+{label:"Sleep",data:[55,65,70,80],backgroundColor:"#0099cc"},
+{label:"Diet",data:[50,60,68,78],backgroundColor:"#66e0ff"}
+]}
+});
+}
+
+function addStreak(){
+streak++;
+document.getElementById("streak").innerText=streak;
+}
+
+function findBuddy(){
+document.getElementById("match").innerText="Matched with Mohit, Rakesh & Rajesh";
+}
+
+function askAI(){
+const q=document.getElementById("userQuery").value;
+let reply="Maintaining consistent sleep, hydration, and balanced meals can significantly improve energy levels.";
+
+if(q.toLowerCase().includes("sleep")) reply="Try sleeping 7–8 hours daily and avoid screens 1 hour before bed.";
+if(q.toLowerCase().includes("stress")) reply="Deep breathing, light exercise, and regular routines help manage stress.";
+if(q.toLowerCase().includes("diet")) reply="A balanced diet with protein, fiber, and water improves overall health.";
+
+document.getElementById("aiReply").innerHTML=`<strong>AI Response:</strong> ${reply}`;
+}
+</script>
+
+</body>
+</html>
